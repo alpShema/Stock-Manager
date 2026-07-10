@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+.next/
+out/
+dist/
+build/
+
+# Environment — never commit secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.claude/
+.idea/
+.vscode/
+*.iml
+
+# Vercel
+.vercel
+
+# API reference doc — for internal/UI use only, not part of the repo
+API_REFERENCE.md
+
+# Learning docs — local only, not part of the repo
+docs/
+
+# TypeScript build info
+*.tsbuildinfo
+next-env.d.ts
+
