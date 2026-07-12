@@ -33,8 +33,7 @@ async function handleSubmit(e: React.FormEvent) {
 
   setIsLoading(true)
 
-  try {
-    await new Promise(resolve => setTimeout(resolve, 2000))
+  try { 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -43,12 +42,16 @@ async function handleSubmit(e: React.FormEvent) {
 
     const data = await res.json()
 
+
     if (!res.ok) {
       setError(data.message || "Login failed")
       return
     }
 
-    setAuth(data.data, null, email)
+    // setAuth(data.data, null, email)
+    const payload = JSON.parse(atob(data.data.split(".")[1]))
+    setAuth(data.data, payload.role ?? null, email)
+
     router.replace("/dashboard")
 
   } catch (err) {

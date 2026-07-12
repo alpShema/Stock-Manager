@@ -29,10 +29,20 @@ function StatCard({ title, value, icon, iconBg }: StatCardProps) {
   )
 }
 
+const gridCols: Record<number, string> = {
+  1: "grid-cols-1",
+  2: "grid-cols-2",
+  3: "grid-cols-3",
+  4: "grid-cols-4",
+}
+
 // ─── Dashboard Page ───────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
   const token = useAuthStore(state => state.token)
+  const role = useAuthStore(state => state.role)
+
+  const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN"
 
   const [stats, setStats] = useState({
     stockTotal: 0,
@@ -47,25 +57,93 @@ export default function DashboardPage() {
     async function fetchStats() {
       const headers = { Authorization: `Bearer ${token}` }
 
-      const [stockTotal, stockValue, salesTotal, salesValue, recent] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/stock/total`, { headers }).then(r => r.json()),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/stock/value`, { headers }).then(r => r.json()),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/sales/total`, { headers }).then(r => r.json()),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/sales/value`, { headers }).then(r => r.json()),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/sales/recent`, { headers }).then(r => r.json()),
-      ])
-
-      setStats({
-        stockTotal: stockTotal.data,
-        stockValue: stockValue.data,
-        salesTotal: salesTotal.data,
-        salesValue: salesValue.data,
-      })
-      setRecentSales(recent.data)
+      if (isAdmin) {
+        const [stockTotal, stockValue, salesTotal, salesValue, recent] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/stock/total`, { headers }).then(r => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/stock/value`, { headers }).then(r => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/sales/total`, { headers }).then(r => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/sales/value`, { headers }).then(r => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/sales/recent`, { headers }).then(r => r.json()),
+        ])
+        setStats({
+          stockTotal: stockTotal.data,
+          stockValue: stockValue.data,
+          salesTotal: salesTotal.data,
+          salesValue: salesValue.data,
+        })
+        setRecentSales(recent.data)
+      } else {
+        const [stockTotal, salesTotal, recent] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/stock/total`, { headers }).then(r => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/sales/total`, { headers }).then(r => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/sales/recent`, { headers }).then(r => r.json()),
+        ])
+        setStats(prev => ({
+          ...prev,
+          stockTotal: stockTotal.data,
+          salesTotal: salesTotal.data,
+        }))
+        setRecentSales(recent.data)
+      }
     }
 
     if (token) fetchStats()
-  }, [token])
+  }, [token, isAdmin])
+
+  const statCards = [
+    {
+      title: "Total Stock Items",
+      value: stats.stockTotal,
+      icon: <Package className="w-6 h-6 text-blue-600" />,
+      iconBg: "bg-blue-50",
+      adminOnly: false,
+    },
+    {
+      title: "Stock Value",
+      value: `$${(stats.stockValue ?? 0).toFixed(2)}`,
+      icon: <DollarSign className="w-6 h-6 text-green-600" />,
+      iconBg: "bg-green-50",
+      adminOnly: true,
+    },
+    {
+      title: "Weekly Sales Count",
+      value: stats.salesTotal,
+      icon: <ShoppingCart className="w-6 h-6 text-purple-600" />,
+      iconBg: "bg-purple-50",
+      adminOnly: false,
+    },
+    {
+      title: "Weekly Sales Value",
+      value: `$${(stats.salesValue ?? 0).toFixed(2)}`,
+      icon: <DollarSign className="w-6 h-6 text-green-600" />,
+      iconBg: "bg-green-50",
+      adminOnly: true,
+    },
+  ].filter(card => !card.adminOnly || isAdmin)
+
+  const quickActions = [
+    {
+      href: "/stock",
+      icon: <Package className="w-8 h-8 text-blue-600 mb-3" />,
+      label: "View Stock",
+      description: "Browse available inventory",
+      adminOnly: false,
+    },
+    {
+      href: "/sales/add",
+      icon: <ShoppingCart className="w-8 h-8 text-green-600 mb-3" />,
+      label: "Record Sale",
+      description: "Add new sales transaction",
+      adminOnly: false,
+    },
+    {
+      href: "/stock/add",
+      icon: <Package className="w-8 h-8 text-purple-600 mb-3" />,
+      label: "Bulk Upload",
+      description: "Upload Excel file",
+      adminOnly: true,
+    },
+  ].filter(action => !action.adminOnly || isAdmin)
 
   return (
     <div>
@@ -75,31 +153,10 @@ export default function DashboardPage() {
       <p className="text-gray-500 text-sm mt-1">Welcome back! Here's the business overview.</p>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-4 gap-4 mt-6">
-        <StatCard
-          title="Total Stock Items"
-          value={stats.stockTotal}
-          icon={<Package className="w-6 h-6 text-blue-600" />}
-          iconBg="bg-blue-50"
-        />
-        <StatCard
-          title="Stock Value"
-          value={`$${stats.stockValue.toFixed(2)}`}
-          icon={<DollarSign className="w-6 h-6 text-green-600" />}
-          iconBg="bg-green-50"
-        />
-        <StatCard
-          title="Weekly Sales"
-          value={stats.salesTotal}
-          icon={<ShoppingCart className="w-6 h-6 text-purple-600" />}
-          iconBg="bg-purple-50"
-        />
-        <StatCard
-          title="Weekly Sales Value"
-          value={`$${stats.salesValue.toFixed(2)}`}
-          icon={<DollarSign className="w-6 h-6 text-green-600" />}
-          iconBg="bg-green-50"
-        />
+      <div className={`grid ${gridCols[statCards.length]} gap-4 mt-6`}>
+        {statCards.map(card => (
+          <StatCard key={card.title} title={card.title} value={card.value} icon={card.icon} iconBg={card.iconBg} />
+        ))}
       </div>
 
       {/* Recent Sales Table */}
@@ -112,11 +169,11 @@ export default function DashboardPage() {
         <table className="w-full">
           <thead>
             <tr className="text-left text-xs text-gray-500 border-b">
-              <th className="px-6 py-3 whitespace-nowrap">Item Code</th>
+              {isAdmin && <th className="px-6 py-3 whitespace-nowrap">Item Code</th>}
               <th className="px-6 py-3 whitespace-nowrap">Item Name</th>
               <th className="px-6 py-3 whitespace-nowrap">Date</th>
               <th className="px-6 py-3 whitespace-nowrap">Container</th>
-              <th className="px-6 py-3 whitespace-nowrap">Recorded By</th>
+              {isAdmin && <th className="px-6 py-3 whitespace-nowrap">Recorded By</th>}
               <th className="px-6 py-3 whitespace-nowrap">Quantity</th>
               <th className="px-6 py-3 whitespace-nowrap text-right">Total Price</th>
             </tr>
@@ -124,11 +181,11 @@ export default function DashboardPage() {
           <tbody>
             {recentSales.map((sale, index) => (
               <tr key={`${sale.code}-${sale.date}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">{sale.code}</td>
+                {isAdmin && <td className="px-6 py-4 whitespace-nowrap">{sale.code}</td>}
                 <td className="px-6 py-4 whitespace-nowrap">{sale.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{sale.date}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{sale.containerName}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{sale.recordedBy}</td>
+                {isAdmin && <td className="px-6 py-4 whitespace-nowrap">{sale.recordedBy}</td>}
                 <td className="px-6 py-4 whitespace-nowrap">{sale.quantity} units</td>
                 <td className="px-6 py-4 whitespace-nowrap text-right">${sale.totalPrice}</td>
               </tr>
@@ -140,22 +197,14 @@ export default function DashboardPage() {
       {/* Quick Actions */}
       <div className="mt-6">
         <h2 className="font-semibold text-gray-800 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-3 gap-4">
-          <a href="/stock/add" className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-            <Package className="w-8 h-8 text-blue-600 mb-3" />
-            <p className="font-medium text-gray-800">Add Stock</p>
-            <p className="text-sm text-gray-500 mt-1">Add new inventory item</p>
-          </a>
-          <a href="/sales/add" className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-            <ShoppingCart className="w-8 h-8 text-green-600 mb-3" />
-            <p className="font-medium text-gray-800">Record Sale</p>
-            <p className="text-sm text-gray-500 mt-1">Add new sales transaction</p>
-          </a>
-          <a href="/stock/add" className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-            <Package className="w-8 h-8 text-purple-600 mb-3" />
-            <p className="font-medium text-gray-800">Bulk Upload</p>
-            <p className="text-sm text-gray-500 mt-1">Upload Excel file</p>
-          </a>
+        <div className={`grid ${gridCols[quickActions.length]} gap-4`}>
+          {quickActions.map(action => (
+            <Link key={action.href} href={action.href} className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+              {action.icon}
+              <p className="font-medium text-gray-800">{action.label}</p>
+              <p className="text-sm text-gray-500 mt-1">{action.description}</p>
+            </Link>
+          ))}
         </div>
       </div>
 
