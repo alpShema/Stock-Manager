@@ -1,8 +1,432 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useAuthStore } from "@/store/authStore"
+import { Plus, ArrowUpCircle, RefreshCw, X, Save, Trash2 } from "lucide-react"
+import Link from "next/link"
+
 export default function TillPage() {
+  const token = useAuthStore(state => state.token)
+  const role = useAuthStore(state => state.role)
+  const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN"
+
+  const [usdBalance, setUsdBalance] = useState(0)
+  const [francsBalance, setFrancsBalance] = useState(0)
+  const [expenses, setExpenses] = useState<any[]>([])
+  const [transactions, setTransactions] = useState<any[]>([])
+
+  // Modals
+  const [showExpense, setShowExpense] = useState(false)
+  const [showTillToBank, setShowTillToBank] = useState(false)
+  const [showConvert, setShowConvert] = useState(false)
+
+  // Add Expense form
+  const [expenseForm, setExpenseForm] = useState({ description: "", amount: "", currency: "USD" })
+  const [expenseLoading, setExpenseLoading] = useState(false)
+  const [expenseError, setExpenseError] = useState<string | null>(null)
+
+  // Till to Bank form
+  const [bankForm, setBankForm] = useState({ amount: "", givenTo: "" })
+  const [bankLoading, setBankLoading] = useState(false)
+  const [bankError, setBankError] = useState<string | null>(null)
+
+  // Convert Currency form — Figma says "vice versa" so support both directions
+  const [convertDir, setConvertDir] = useState<"francs-to-usd" | "usd-to-francs">("francs-to-usd")
+  const [convertForm, setConvertForm] = useState({ amount: "", exchangeRate: "", description: "" })
+  const [convertLoading, setConvertLoading] = useState(false)
+  const [convertError, setConvertError] = useState<string | null>(null)
+
+  // Delete
+  const [deleteExpense, setDeleteExpense] = useState<any | null>(null)
+  const [deleteTx, setDeleteTx] = useState<any | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  async function fetchAll() {
+    const headers = { Authorization: `Bearer ${token}` }
+    const [usd, francs, exp, tx] = await Promise.all([
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/till/balance/usd`, { headers }).then(r => r.json()),
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/till/balance/francs`, { headers }).then(r => r.json()),
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/till/expenses/top5`, { headers }).then(r => r.json()),
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/till/transactions/top5`, { headers }).then(r => r.json()),
+    ])
+    setUsdBalance(usd.data ?? 0)
+    setFrancsBalance(francs.data ?? 0)
+    setExpenses(exp.data ?? [])
+    setTransactions(tx.data ?? [])
+  }
+
+  useEffect(() => {
+    if (token) fetchAll()
+  }, [token])
+
+  async function handleAddExpense(e: React.FormEvent) {
+    e.preventDefault()
+    if (!expenseForm.description || !expenseForm.amount) { setExpenseError("All fields are required"); return }
+    setExpenseLoading(true); setExpenseError(null)
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/till/add/expense`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ description: expenseForm.description, amount: Number(expenseForm.amount), currency: expenseForm.currency }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setExpenseError(data.message || "Failed to add expense"); return }
+      setShowExpense(false)
+      setExpenseForm({ description: "", amount: "", currency: "USD" })
+      fetchAll()
+    } catch { setExpenseError("Something went wrong.") }
+    finally { setExpenseLoading(false) }
+  }
+
+  async function handleTillToBank(e: React.FormEvent) {
+    e.preventDefault()
+    if (!bankForm.amount || !bankForm.givenTo) { setBankError("All fields are required"); return }
+    setBankLoading(true); setBankError(null)
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/till/till-to-bank`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ amount: Number(bankForm.amount), currency: "USD", description: `Given to: ${bankForm.givenTo}` }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setBankError(data.message || "Transfer failed"); return }
+      setShowTillToBank(false)
+      setBankForm({ amount: "", givenTo: "" })
+      fetchAll()
+    } catch { setBankError("Something went wrong.") }
+    finally { setBankLoading(false) }
+  }
+
+  async function handleConvert(e: React.FormEvent) {
+    e.preventDefault()
+    if (!convertForm.amount || !convertForm.exchangeRate) { setConvertError("Amount and exchange rate are required"); return }
+    setConvertLoading(true); setConvertError(null)
+    try {
+      const endpoint = convertDir === "francs-to-usd"
+        ? "/till/conversion/francs-to-usd"
+        : "/till/conversion/usd-to-francs"
+      const body = convertDir === "francs-to-usd"
+        ? { francsAmount: Number(convertForm.amount), exchangeRate: Number(convertForm.exchangeRate), description: convertForm.description }
+        : { usdAmount: Number(convertForm.amount), exchangeRate: Number(convertForm.exchangeRate), description: convertForm.description }
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+      if (!res.ok) { setConvertError(data.message || "Conversion failed"); return }
+      setShowConvert(false)
+      setConvertForm({ amount: "", exchangeRate: "", description: "" })
+      fetchAll()
+    } catch { setConvertError("Something went wrong.") }
+    finally { setConvertLoading(false) }
+  }
+
+  async function handleDeleteExpense() {
+    setDeleteLoading(true); setDeleteError(null)
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/till/delete/expense/${deleteExpense.id}`, {
+        method: "DELETE", headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) { const d = await res.json(); setDeleteError(d.message || "Failed to delete"); return }
+      setDeleteExpense(null); fetchAll()
+    } catch { setDeleteError("Something went wrong.") }
+    finally { setDeleteLoading(false) }
+  }
+
+  async function handleDeleteTx() {
+    setDeleteLoading(true); setDeleteError(null)
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/till/delete/transaction/${deleteTx.id}`, {
+        method: "DELETE", headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) { const d = await res.json(); setDeleteError(d.message || "Failed to delete"); return }
+      setDeleteTx(null); fetchAll()
+    } catch { setDeleteError("Something went wrong.") }
+    finally { setDeleteLoading(false) }
+  }
+
+  function formatDate(dt: string) {
+    if (!dt) return ""
+    const d = new Date(dt)
+    return d.toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "numeric" }) +
+      ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
+  }
+
+  function formatAmount(amount: number, currency: string) {
+    return currency === "FRANCS" ? `${(amount ?? 0).toLocaleString()} Francs` : `$${(amount ?? 0).toFixed(2)}`
+  }
+
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Till</h1>
-      {/* TODO: USD / Francs balance cards, transaction table, conversion forms */}
+      {/* Header */}
+      <h1 className="text-2xl font-bold">Till Management</h1>
+      <p className="text-gray-500 text-sm mt-1">Manage cash flow, expenses, and transactions</p>
+
+      {/* Balance Cards */}
+      <div className="grid grid-cols-2 gap-4 mt-6">
+        <div className="bg-green-600 rounded-xl p-5 text-white">
+          <p className="text-xs opacity-80">Total Dollars</p>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-2xl font-light">$</span>
+            <span className="text-3xl font-bold">${usdBalance.toFixed(2)}</span>
+          </div>
+        </div>
+        <div className="bg-blue-600 rounded-xl p-5 text-white">
+          <p className="text-xs opacity-80">Total Francs</p>
+          <p className="text-3xl font-bold mt-1">{francsBalance.toLocaleString()}</p>
+        </div>
+      </div>
+
+      {/* Action Cards */}
+      <div className="grid grid-cols-3 gap-4 mt-4">
+        <button onClick={() => { setShowExpense(true); setExpenseError(null) }} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 text-left hover:shadow-md transition-shadow">
+          <Plus className="w-5 h-5 text-red-500 mb-2" />
+          <p className="font-semibold text-gray-800">Add Expense</p>
+          <p className="text-xs text-gray-400 mt-0.5">Record new expense</p>
+        </button>
+        <button onClick={() => { setShowTillToBank(true); setBankError(null) }} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 text-left hover:shadow-md transition-shadow">
+          <ArrowUpCircle className="w-5 h-5 text-purple-500 mb-2" />
+          <p className="font-semibold text-gray-800">Till to Bank</p>
+          <p className="text-xs text-gray-400 mt-0.5">Transfer to bank</p>
+        </button>
+        <button onClick={() => { setShowConvert(true); setConvertError(null) }} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 text-left hover:shadow-md transition-shadow">
+          <RefreshCw className="w-5 h-5 text-blue-500 mb-2" />
+          <p className="font-semibold text-gray-800">Convert Currency</p>
+          <p className="text-xs text-gray-400 mt-0.5">Francs to Dollars</p>
+        </button>
+      </div>
+
+      {/* Expenses Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-6">
+        <div className="flex items-center justify-between px-6 py-4 border-b">
+          <h2 className="font-semibold text-gray-800">Expenses</h2>
+          <Link href="/expenses" className="text-sm text-blue-600 hover:underline">View more</Link>
+        </div>
+        <table className="w-full">
+          <thead>
+            <tr className="text-left text-xs text-gray-500 border-b">
+              <th className="px-6 py-3">Date</th>
+              <th className="px-6 py-3">Expense Name</th>
+              <th className="px-6 py-3">Amount</th>
+              <th className="px-6 py-3">Currency</th>
+              <th className="px-6 py-3">Recorded By</th>
+              {isAdmin && <th className="px-6 py-3 text-right">Actions</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {expenses.map((exp, i) => (
+              <tr key={exp.id ?? i} className="text-sm text-gray-600 border-b hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">{exp.expenseDate?.split("T")[0]}</td>
+                <td className="px-6 py-4">{exp.description}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{exp.currency === "USD" ? `$${(exp.amount ?? 0).toFixed(2)}` : (exp.amount ?? 0).toLocaleString()}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{exp.currency}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{exp.recordedBy}</td>
+                {isAdmin && (
+                  <td className="px-6 py-4 text-right">
+                    <button onClick={() => { setDeleteExpense(exp); setDeleteError(null) }} className="text-red-500 hover:text-red-700"><Trash2 className="w-4 h-4" /></button>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Till Transactions Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-6">
+        <div className="flex items-center justify-between px-6 py-4 border-b">
+          <h2 className="font-semibold text-gray-800">Till Transactions</h2>
+          <Link href="/till/transactions" className="text-sm text-blue-600 hover:underline">View more</Link>
+        </div>
+        <table className="w-full">
+          <thead>
+            <tr className="text-left text-xs text-gray-500 border-b">
+              <th className="px-6 py-3">Description</th>
+              <th className="px-6 py-3">Date & Time</th>
+              <th className="px-6 py-3">Recorded By</th>
+              <th className="px-6 py-3">Currency</th>
+              <th className="px-6 py-3 text-right">Amount</th>
+              {isAdmin && <th className="px-6 py-3 text-right">Actions</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {transactions.map((tx, i) => (
+              <tr key={tx.id ?? i} className="text-sm text-gray-600 border-b hover:bg-gray-50">
+                <td className="px-6 py-4">{tx.description}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{formatDate(tx.transactionDate)}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{tx.recordedBy}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{tx.currency}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-right">{formatAmount(tx.amount, tx.currency)}</td>
+                {isAdmin && (
+                  <td className="px-6 py-4 text-right">
+                    <button onClick={() => { setDeleteTx(tx); setDeleteError(null) }} className="text-red-500 hover:text-red-700"><Trash2 className="w-4 h-4" /></button>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Add Expense Modal */}
+      {showExpense && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold">Add Expense</h2>
+              <button onClick={() => setShowExpense(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+            </div>
+            <form onSubmit={handleAddExpense} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Expense Name <span className="text-red-500">*</span></label>
+                <input value={expenseForm.description} onChange={e => setExpenseForm({ ...expenseForm, description: e.target.value })} placeholder="Enter expense name" className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Amount <span className="text-red-500">*</span></label>
+                <input type="number" step="0.01" value={expenseForm.amount} onChange={e => setExpenseForm({ ...expenseForm, amount: e.target.value })} placeholder="Enter amount" className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Currency <span className="text-red-500">*</span></label>
+                <select value={expenseForm.currency} onChange={e => setExpenseForm({ ...expenseForm, currency: e.target.value })} className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="USD">USD</option>
+                  <option value="FRANCS">Francs</option>
+                </select>
+              </div>
+              {expenseError && <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg"><span>⚠</span><p>{expenseError}</p></div>}
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowExpense(false)} className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50">Cancel</button>
+                <button type="submit" disabled={expenseLoading} className="flex-1 bg-red-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50">
+                  {expenseLoading ? "Adding..." : "Add Expense"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Till to Bank Modal */}
+      {showTillToBank && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold">Till to Bank</h2>
+              <button onClick={() => setShowTillToBank(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+            </div>
+            <form onSubmit={handleTillToBank} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Amount (USD) <span className="text-red-500">*</span></label>
+                <input type="number" step="0.01" value={bankForm.amount} onChange={e => setBankForm({ ...bankForm, amount: e.target.value })} placeholder="Enter amount" className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                <p className="text-xs text-blue-500 mt-1">Available: ${usdBalance.toFixed(2)}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Given To <span className="text-red-500">*</span></label>
+                <input value={bankForm.givenTo} onChange={e => setBankForm({ ...bankForm, givenTo: e.target.value })} placeholder="Enter recipient name" className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+              </div>
+              {bankError && <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg"><span>⚠</span><p>{bankError}</p></div>}
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowTillToBank(false)} className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50">Cancel</button>
+                <button type="submit" disabled={bankLoading} className="flex-1 bg-purple-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50">
+                  {bankLoading ? "Transferring..." : "Transfer"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Convert Currency Modal */}
+      {showConvert && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Convert Currency</h2>
+              <button onClick={() => setShowConvert(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+            </div>
+            {/* Direction toggle */}
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <button type="button" onClick={() => setConvertDir("francs-to-usd")} className={`py-2 rounded-lg text-sm font-medium border-2 transition-colors ${convertDir === "francs-to-usd" ? "border-blue-600 bg-blue-600 text-white" : "border-gray-200 text-gray-600 hover:border-blue-300"}`}>
+                Francs → USD
+              </button>
+              <button type="button" onClick={() => setConvertDir("usd-to-francs")} className={`py-2 rounded-lg text-sm font-medium border-2 transition-colors ${convertDir === "usd-to-francs" ? "border-blue-600 bg-blue-600 text-white" : "border-gray-200 text-gray-600 hover:border-blue-300"}`}>
+                USD → Francs
+              </button>
+            </div>
+            <form onSubmit={handleConvert} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {convertDir === "francs-to-usd" ? "Francs Amount" : "USD Amount"} <span className="text-red-500">*</span>
+                </label>
+                <input type="number" step="0.01" value={convertForm.amount} onChange={e => setConvertForm({ ...convertForm, amount: e.target.value })} placeholder="Enter amount" className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Exchange Rate (FC per $1) <span className="text-red-500">*</span></label>
+                <input type="number" value={convertForm.exchangeRate} onChange={e => setConvertForm({ ...convertForm, exchangeRate: e.target.value })} placeholder="e.g. 2800" className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                {convertForm.amount && convertForm.exchangeRate && (
+                  <p className="text-xs text-blue-500 mt-1">
+                    {convertDir === "francs-to-usd"
+                      ? `≈ $${(Number(convertForm.amount) / Number(convertForm.exchangeRate)).toFixed(2)} USD`
+                      : `≈ ${(Number(convertForm.amount) * Number(convertForm.exchangeRate)).toLocaleString()} Francs`}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description <span className="text-gray-400 font-normal">(optional)</span></label>
+                <input value={convertForm.description} onChange={e => setConvertForm({ ...convertForm, description: e.target.value })} placeholder="Optional note" className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              {convertError && <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg"><span>⚠</span><p>{convertError}</p></div>}
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowConvert(false)} className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50">Cancel</button>
+                <button type="submit" disabled={convertLoading} className="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                  <RefreshCw className="w-4 h-4" />
+                  {convertLoading ? "Converting..." : "Convert"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Expense Modal */}
+      {deleteExpense && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-red-100 rounded-full p-2"><Trash2 className="w-5 h-5 text-red-600" /></div>
+              <h2 className="text-lg font-semibold">Delete Expense</h2>
+            </div>
+            <p className="text-gray-600 text-sm mb-4">Delete <span className="font-medium">{deleteExpense.description}</span>? This cannot be undone.</p>
+            {deleteError && <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg mb-4"><span>⚠</span><p>{deleteError}</p></div>}
+            <div className="flex gap-3">
+              <button onClick={() => setDeleteExpense(null)} className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50">Cancel</button>
+              <button onClick={handleDeleteExpense} disabled={deleteLoading} className="flex-1 bg-red-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50">
+                {deleteLoading ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Transaction Modal */}
+      {deleteTx && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-red-100 rounded-full p-2"><Trash2 className="w-5 h-5 text-red-600" /></div>
+              <h2 className="text-lg font-semibold">Delete Transaction</h2>
+            </div>
+            <p className="text-gray-600 text-sm mb-4">Delete this transaction? This cannot be undone.</p>
+            {deleteError && <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg mb-4"><span>⚠</span><p>{deleteError}</p></div>}
+            <div className="flex gap-3">
+              <button onClick={() => setDeleteTx(null)} className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50">Cancel</button>
+              <button onClick={handleDeleteTx} disabled={deleteLoading} className="flex-1 bg-red-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50">
+                {deleteLoading ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  );
+  )
 }

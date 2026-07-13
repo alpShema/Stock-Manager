@@ -7,9 +7,6 @@ import {
   Package,
   ShoppingCart,
   Wallet,
-  Receipt,
-  CreditCard,
-  TrendingUp,
   Users,
   ClipboardList,
 } from "lucide-react";
@@ -21,9 +18,6 @@ const nav = [
   { label: "Stock",       href: "/stock",       icon: Package },
   { label: "Sales",       href: "/sales",       icon: ShoppingCart },
   { label: "Till",        href: "/till",        icon: Wallet },
-  { label: "Expenses",    href: "/expenses",    icon: Receipt },
-  { label: "Debt",        href: "/debt",        icon: CreditCard },
-  { label: "Advance",     href: "/advance",     icon: TrendingUp },
   { label: "Users",       href: "/users",       icon: Users },
   { label: "Audit Trail", href: "/audit",       icon: ClipboardList },
 ];
