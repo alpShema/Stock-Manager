@@ -64,7 +64,7 @@ export default function TillTransactionsPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       )
       const json = await res.json()
-      const pageData = json.data
+      const pageData = json.data ?? {}
       setTransactions(pageData.content ?? [])
       setTotalPages(pageData.totalPages ?? 1)
       setTotalElements(pageData.totalElements ?? 0)

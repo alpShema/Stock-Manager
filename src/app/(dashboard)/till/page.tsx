@@ -44,16 +44,20 @@ export default function TillPage() {
 
   async function fetchAll() {
     const headers = { Authorization: `Bearer ${token}` }
-    const [usd, francs, exp, tx] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/till/balance/usd`, { headers }).then(r => r.json()),
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/till/balance/francs`, { headers }).then(r => r.json()),
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/till/expenses/top5`, { headers }).then(r => r.json()),
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/till/transactions/top5`, { headers }).then(r => r.json()),
-    ])
-    setUsdBalance(usd.data ?? 0)
-    setFrancsBalance(francs.data ?? 0)
-    setExpenses(exp.data ?? [])
-    setTransactions(tx.data ?? [])
+    try {
+      const [usd, francs, exp, tx] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/till/balance/usd`, { headers }).then(r => r.json()),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/till/balance/francs`, { headers }).then(r => r.json()),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/till/expenses/top5`, { headers }).then(r => r.json()),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/till/transactions/top5`, { headers }).then(r => r.json()),
+      ])
+      setUsdBalance(usd.data ?? 0)
+      setFrancsBalance(francs.data ?? 0)
+      setExpenses(Array.isArray(exp.data) ? exp.data : [])
+      setTransactions(Array.isArray(tx.data) ? tx.data : [])
+    } catch (err) {
+      console.error("Till fetchAll error:", err)
+    }
   }
 
   useEffect(() => {
@@ -216,7 +220,9 @@ export default function TillPage() {
             </tr>
           </thead>
           <tbody>
-            {expenses.map((exp, i) => (
+            {expenses.length === 0 ? (
+              <tr key="empty-exp"><td colSpan={isAdmin ? 6 : 5} className="px-6 py-6 text-center text-gray-400 text-sm">No expenses recorded yet.</td></tr>
+            ) : expenses.map((exp, i) => (
               <tr key={exp.id ?? i} className="text-sm text-gray-600 border-b hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">{exp.expenseDate?.split("T")[0]}</td>
                 <td className="px-6 py-4">{exp.description}</td>
@@ -252,7 +258,9 @@ export default function TillPage() {
             </tr>
           </thead>
           <tbody>
-            {transactions.map((tx, i) => (
+            {transactions.length === 0 ? (
+              <tr key="empty-tx"><td colSpan={isAdmin ? 6 : 5} className="px-6 py-6 text-center text-gray-400 text-sm">No transactions recorded yet.</td></tr>
+            ) : transactions.map((tx, i) => (
               <tr key={tx.id ?? i} className="text-sm text-gray-600 border-b hover:bg-gray-50">
                 <td className="px-6 py-4">{tx.description}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{formatDate(tx.transactionDate)}</td>

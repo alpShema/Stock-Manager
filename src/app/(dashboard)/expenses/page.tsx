@@ -49,7 +49,7 @@ export default function ExpensesPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       )
       const json = await res.json()
-      const pageData = json.data
+      const pageData = json.data ?? {}
       setExpenses(pageData.content ?? [])
       setTotalPages(pageData.totalPages ?? 1)
       setTotalElements(pageData.totalElements ?? 0)
@@ -115,8 +115,8 @@ export default function ExpensesPage() {
               <tr key="loading"><td colSpan={isAdmin ? 6 : 5} className="px-6 py-8 text-center text-gray-400 text-sm">Loading…</td></tr>
             ) : expenses.length === 0 ? (
               <tr key="empty"><td colSpan={isAdmin ? 6 : 5} className="px-6 py-8 text-center text-gray-400 text-sm">No expenses found.</td></tr>
-            ) : expenses.map(exp => (
-              <tr key={exp.id} className="text-sm text-gray-700 border-b hover:bg-gray-50">
+            ) : expenses.map((exp, i) => (
+              <tr key={exp.id ?? i} className="text-sm text-gray-700 border-b hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">{formatDate(exp.expenseDate)}</td>
                 <td className="px-6 py-4">{exp.description}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{formatAmount(exp.amount, exp.currency)}</td>

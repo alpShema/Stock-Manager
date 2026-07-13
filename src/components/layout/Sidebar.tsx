@@ -14,12 +14,12 @@ import { clsx } from "clsx";
 import { useAuthStore } from "@/store/authStore";
 
 const nav = [
-  { label: "Dashboard",   href: "/dashboard",  icon: LayoutDashboard },
-  { label: "Stock",       href: "/stock",       icon: Package },
-  { label: "Sales",       href: "/sales",       icon: ShoppingCart },
-  { label: "Till",        href: "/till",        icon: Wallet },
-  { label: "Users",       href: "/users",       icon: Users },
-  { label: "Audit Trail", href: "/audit",       icon: ClipboardList },
+  { label: "Dashboard",   href: "/dashboard",  icon: LayoutDashboard, superAdminOnly: false },
+  { label: "Stock",       href: "/stock",       icon: Package,         superAdminOnly: false },
+  { label: "Sales",       href: "/sales",       icon: ShoppingCart,    superAdminOnly: false },
+  { label: "Till",        href: "/till",        icon: Wallet,          superAdminOnly: false },
+  { label: "Users",       href: "/users",       icon: Users,           superAdminOnly: true  },
+  { label: "Audit Trail", href: "/audit",       icon: ClipboardList,   superAdminOnly: true  },
 ];
 
 function roleLabel(role: string | null) {
@@ -46,7 +46,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 p-4 space-y-1">
-        {nav.map(({ label, href, icon: Icon }) => (
+        {nav.filter(item => !item.superAdminOnly || role === "SUPER_ADMIN").map(({ label, href, icon: Icon }) => (
           <Link
             key={href}
             href={href}
