@@ -5,8 +5,8 @@ import LoginForm from "@/components/forms/LoginForm"
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: "#e4effe" }}>
-      <div className="w-full max-w-md p-8 bg-white rounded-xl shadow">
+    <main className="min-h-screen flex flex-col items-center justify-center px-4" style={{ backgroundColor: "#e4effe" }}>
+      <div className="w-full max-w-md p-6 sm:p-8 bg-white rounded-xl shadow">
         <div className="flex items-center justify-center mb-6 ">
           <div className="bg-blue-600 rounded-full p-3">
             <LogIn className="h-12 w-12 text-white" />

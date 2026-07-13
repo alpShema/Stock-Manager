@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { LogOut, KeyRound, X, Eye, EyeOff } from "lucide-react";
+import { LogOut, KeyRound, X, Eye, EyeOff, Menu } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "next/navigation";
 
-export function Topbar() {
+export function Topbar({ onMenuClick }: Readonly<{ onMenuClick?: () => void }>) {
   const router = useRouter();
   const clearAuth = useAuthStore(state => state.clearAuth);
   const token = useAuthStore(state => state.token);
@@ -55,22 +55,27 @@ export function Topbar() {
 
   return (
     <>
-      <header className="h-16 bg-white border-b flex items-center justify-between px-6">
-        <span className="text-sm text-gray-500">Welcome back</span>
+      <header className="h-16 bg-white border-b flex items-center justify-between px-4 md:px-6">
+        <div className="flex items-center gap-2">
+          <button onClick={onMenuClick} className="lg:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg" aria-label="Toggle menu">
+            <Menu className="w-5 h-5" />
+          </button>
+          <span className="hidden sm:block text-sm text-gray-500">Welcome back</span>
+        </div>
         <div className="flex items-center gap-2">
           <button
             onClick={openModal}
             className="flex items-center gap-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors"
           >
             <KeyRound className="w-4 h-4" />
-            Change Password
+            <span className="hidden sm:inline">Change Password</span>
           </button>
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors"
           >
             <LogOut className="w-4 h-4" />
-            Logout
+            <span className="hidden sm:inline">Logout</span>
           </button>
         </div>
       </header>

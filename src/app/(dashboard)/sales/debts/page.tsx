@@ -130,7 +130,7 @@ export default function DebtsPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="mb-1">
             <Link href="/sales" className="text-sm text-gray-500 hover:text-gray-700">← Back to Sales</Link>
@@ -154,6 +154,7 @@ export default function DebtsPage() {
 
       {/* Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-4">
+        <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="text-left text-xs text-gray-500 border-b">
@@ -196,6 +197,7 @@ export default function DebtsPage() {
             ))}
           </tbody>
         </table>
+        </div>
 
         {/* Pagination */}
         <div className="flex items-center justify-between px-6 py-4 text-sm text-gray-500">

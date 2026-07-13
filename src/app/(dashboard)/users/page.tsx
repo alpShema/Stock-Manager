@@ -199,7 +199,7 @@ export default function UsersPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Users</h1>
           <p className="text-gray-500 text-sm mt-1">Manage system users and roles</p>
@@ -216,7 +216,7 @@ export default function UsersPage() {
 
       {/* Stats */}
       {isAdmin && (
-        <div className={`grid ${isSuperAdmin ? "grid-cols-3" : "grid-cols-2"} gap-4 mt-6`}>
+        <div className={`grid ${isSuperAdmin ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"} gap-4 mt-6`}>
           <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
             <div className="p-3 bg-blue-50 rounded-xl"><Users className="w-6 h-6 text-blue-600" /></div>
             <div>
@@ -244,7 +244,7 @@ export default function UsersPage() {
       )}
 
       {/* Search */}
-      <form onSubmit={handleSearch} className="flex gap-2 mt-6">
+      <form onSubmit={handleSearch} className="flex flex-wrap gap-2 mt-6">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -259,6 +259,7 @@ export default function UsersPage() {
 
       {/* Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-4">
+        <div className="overflow-x-auto hidden md:block">
         <table className="w-full">
           <thead>
             <tr className="text-left text-xs text-gray-500 border-b">
@@ -299,6 +300,50 @@ export default function UsersPage() {
             ))}
           </tbody>
         </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="block md:hidden">
+          {loading ? (
+            <p className="px-4 py-8 text-center text-gray-400 text-sm">Loading…</p>
+          ) : users.length === 0 ? (
+            <p className="px-4 py-8 text-center text-gray-400 text-sm">No users found.</p>
+          ) : users.map(user => (
+            <div key={user.id} className="relative bg-white border-b p-4">
+              {isSuperAdmin && (
+                <div className="absolute top-4 right-4 flex items-center gap-1">
+                  <button onClick={() => { setResetTarget(user); setResetError(""); setResetSuccess("") }} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded" title="Reset Password">
+                    <RefreshCw className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => openEdit(user)} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded" title="Edit">
+                    <SquarePen className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => { setDeleteTarget(user); setDeleteError("") }} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Delete">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-2 text-sm pr-24">
+                <div className="col-span-2">
+                  <p className="text-xs text-gray-400">Name</p>
+                  <p className="font-medium text-gray-700">{user.firstName} {user.lastName}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-xs text-gray-400">Email</p>
+                  <p className="text-gray-600 break-all">{user.email}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Role</p>
+                  <div className="mt-0.5">{roleBadge(user.role)}</div>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Joined</p>
+                  <p className="text-gray-600">{formatDate(user.createdAt)}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
 
         {/* Pagination */}
         <div className="flex items-center justify-between px-6 py-4 border-t">

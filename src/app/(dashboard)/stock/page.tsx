@@ -105,7 +105,7 @@ export default function StockPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Stock Management</h1>
           <p className="text-gray-500 text-sm mt-1">Manage your inventory and stock levels</p>
@@ -123,7 +123,7 @@ export default function StockPage() {
       </div>
 
       {/* Search + Filter */}
-      <div className="mt-6 flex gap-3">
+      <div className="mt-6 flex flex-wrap gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -148,6 +148,7 @@ export default function StockPage() {
 
       {/* Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-4">
+        <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="text-left text-xs text-gray-500 border-b">
@@ -181,6 +182,7 @@ export default function StockPage() {
             ))}
           </tbody>
         </table>
+        </div>
 
         {/* Pagination */}
         <div className="flex items-center justify-between px-6 py-4 text-sm text-gray-500">

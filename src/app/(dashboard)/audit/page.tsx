@@ -94,7 +94,7 @@ export default function AuditPage() {
       <p className="text-sm text-gray-500 mt-1">Complete log of all system actions</p>
 
       {/* Tabs */}
-      <div className="flex gap-1 mt-6 bg-gray-100 p-1 rounded-xl w-fit">
+      <div className="flex flex-wrap gap-1 mt-6 bg-gray-100 p-1 rounded-xl">
         {TABS.map((tab, i) => (
           <button
             key={tab.label}
@@ -112,6 +112,7 @@ export default function AuditPage() {
 
       {/* Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-4">
+        <div className="overflow-x-auto hidden md:block">
         <table className="w-full">
           <thead>
             <tr className="text-left text-xs text-gray-500 border-b">
@@ -138,6 +139,35 @@ export default function AuditPage() {
             ))}
           </tbody>
         </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="block md:hidden">
+          {loading ? (
+            <p className="px-4 py-8 text-center text-gray-400 text-sm">Loading…</p>
+          ) : error ? (
+            <p className="px-4 py-8 text-center text-red-400 text-sm">{error}</p>
+          ) : records.length === 0 ? (
+            <p className="px-4 py-8 text-center text-gray-400 text-sm">No audit records found.</p>
+          ) : records.map((rec, i) => (
+            <div key={i} className="bg-white border-b p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div>{actionBadge(rec.action)}</div>
+                <span className="text-xs text-gray-400">{formatDateTime(rec.performedAt)}</span>
+              </div>
+              <div className="grid grid-cols-1 gap-1 text-sm">
+                <div>
+                  <p className="text-xs text-gray-400">Performed By</p>
+                  <p className="font-medium text-gray-700">{rec.performedBy}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Details</p>
+                  <p className="text-gray-500">{rec.details}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
 
         {/* Pagination */}
         <div className="flex items-center justify-between px-6 py-4 border-t">

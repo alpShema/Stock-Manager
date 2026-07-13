@@ -114,6 +114,7 @@ export default function TillTransactionsPage() {
 
       {/* Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-6">
+        <div className="overflow-x-auto hidden md:block">
         <table className="w-full">
           <thead>
             <tr className="text-left text-xs text-gray-500 border-b">
@@ -154,6 +155,52 @@ export default function TillTransactionsPage() {
             ))}
           </tbody>
         </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="block md:hidden">
+          {loading ? (
+            <p className="px-4 py-8 text-center text-gray-400 text-sm">Loading…</p>
+          ) : transactions.length === 0 ? (
+            <p className="px-4 py-8 text-center text-gray-400 text-sm">No transactions found.</p>
+          ) : transactions.map(tx => (
+            <div key={tx.id} className="relative bg-white border-b p-4">
+              {isAdmin && (
+                <div className="absolute top-4 right-4">
+                  <button
+                    onClick={() => { setReverseTarget(tx); setReverseError("") }}
+                    className="p-1.5 text-blue-500 hover:bg-blue-50 rounded"
+                    title="Reverse transaction"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-2 text-sm pr-8">
+                <div className="col-span-2">
+                  <p className="text-xs text-gray-400">Description</p>
+                  <p className="font-medium text-gray-700">{tx.description}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Amount</p>
+                  <p className={`font-medium ${tx.amount < 0 ? "text-red-500" : "text-gray-800"}`}>{formatAmount(tx.amount, tx.currency)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Currency</p>
+                  <p className="text-gray-600">{tx.currency === "USD" ? "USD" : "Francs"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Date &amp; Time</p>
+                  <p className="text-gray-600">{formatDateTime(tx.transactionDate)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Recorded By</p>
+                  <p className="text-gray-600">{tx.recordedBy}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
 
         {/* Pagination */}
         <div className="flex items-center justify-between px-6 py-4 border-t">

@@ -99,6 +99,7 @@ export default function ExpensesPage() {
 
       {/* Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-6">
+        <div className="overflow-x-auto hidden md:block">
         <table className="w-full">
           <thead>
             <tr className="text-left text-xs text-gray-500 border-b">
@@ -136,6 +137,51 @@ export default function ExpensesPage() {
             ))}
           </tbody>
         </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="block md:hidden">
+          {loading ? (
+            <p className="px-4 py-8 text-center text-gray-400 text-sm">Loading…</p>
+          ) : expenses.length === 0 ? (
+            <p className="px-4 py-8 text-center text-gray-400 text-sm">No expenses found.</p>
+          ) : expenses.map((exp, i) => (
+            <div key={exp.id ?? i} className="relative bg-white border-b p-4">
+              {isAdmin && (
+                <div className="absolute top-4 right-4">
+                  <button
+                    onClick={() => { setDeleteTarget(exp); setDeleteError("") }}
+                    className="p-1.5 text-red-500 hover:bg-red-50 rounded"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-2 text-sm pr-8">
+                <div>
+                  <p className="text-xs text-gray-400">Date</p>
+                  <p className="font-medium text-gray-700">{formatDate(exp.expenseDate)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Amount</p>
+                  <p className="font-medium text-gray-700">{formatAmount(exp.amount, exp.currency)}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-xs text-gray-400">Expense Name</p>
+                  <p className="font-medium text-gray-700">{exp.description}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Currency</p>
+                  <p className="text-gray-600">{exp.currency === "USD" ? "USD" : "Francs"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Recorded By</p>
+                  <p className="text-gray-600">{exp.recordedBy}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
 
         {/* Pagination */}
         <div className="flex items-center justify-between px-6 py-4 border-t">

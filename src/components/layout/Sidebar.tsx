@@ -9,6 +9,7 @@ import {
   Wallet,
   Users,
   ClipboardList,
+  X,
 } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuthStore } from "@/store/authStore";
@@ -28,28 +29,37 @@ function roleLabel(role: string | null) {
   return "user"
 }
 
-export function Sidebar() {
+export function Sidebar({ onClose }: Readonly<{ onClose?: () => void }>) {
   const pathname = usePathname();
   const name = useAuthStore(state => state.name);
   const role = useAuthStore(state => state.role);
 
   return (
-    <aside className="w-60 bg-white border-r flex flex-col">
+    <aside className="w-60 h-full bg-white border-r flex flex-col">
       {/* Brand + user info */}
-      <div className="h-16 flex flex-col justify-center px-6 border-b">
-        <p className="font-bold text-blue-600 text-sm leading-tight">DALYDA Stock Manager</p>
-        {name && (
-          <p className="text-xs text-gray-500 mt-0.5">
-            {name} <span className="text-gray-400">({roleLabel(role)})</span>
-          </p>
+      <div className="h-16 flex items-center justify-between px-6 border-b flex-shrink-0">
+        <div>
+          <p className="font-bold text-blue-600 text-sm leading-tight">DALYDA Stock Manager</p>
+          {name && (
+            <p className="text-xs text-gray-500 mt-0.5">
+              {name} <span className="text-gray-400">({roleLabel(role)})</span>
+            </p>
+          )}
+        </div>
+        {/* Close button — mobile only */}
+        {onClose && (
+          <button onClick={onClose} className="lg:hidden p-1 text-gray-400 hover:text-gray-600">
+            <X className="w-5 h-5" />
+          </button>
         )}
       </div>
 
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {nav.filter(item => !item.superAdminOnly || role === "SUPER_ADMIN").map(({ label, href, icon: Icon }) => (
           <Link
             key={href}
             href={href}
+            onClick={onClose}
             className={clsx(
               "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
               pathname.startsWith(href)
@@ -57,7 +67,7 @@ export function Sidebar() {
                 : "text-gray-600 hover:bg-gray-100"
             )}
           >
-            <Icon className="w-4 h-4" />
+            <Icon className="w-4 h-4 flex-shrink-0" />
             {label}
           </Link>
         ))}

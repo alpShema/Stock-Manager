@@ -169,7 +169,7 @@ export default function TillPage() {
       <p className="text-gray-500 text-sm mt-1">Manage cash flow, expenses, and transactions</p>
 
       {/* Balance Cards */}
-      <div className="grid grid-cols-2 gap-4 mt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
         <div className="bg-green-600 rounded-xl p-5 text-white">
           <p className="text-xs opacity-80">Total Dollars</p>
           <div className="flex items-center gap-2 mt-1">
@@ -184,7 +184,7 @@ export default function TillPage() {
       </div>
 
       {/* Action Cards */}
-      <div className="grid grid-cols-3 gap-4 mt-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
         <button onClick={() => { setShowExpense(true); setExpenseError(null) }} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 text-left hover:shadow-md transition-shadow">
           <Plus className="w-5 h-5 text-red-500 mb-2" />
           <p className="font-semibold text-gray-800">Add Expense</p>
@@ -204,10 +204,11 @@ export default function TillPage() {
 
       {/* Expenses Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-6">
-        <div className="flex items-center justify-between px-6 py-4 border-b">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-b">
           <h2 className="font-semibold text-gray-800">Expenses</h2>
           <Link href="/expenses" className="text-sm text-blue-600 hover:underline">View more</Link>
         </div>
+        <div className="overflow-x-auto hidden md:block">
         <table className="w-full">
           <thead>
             <tr className="text-left text-xs text-gray-500 border-b">
@@ -238,14 +239,55 @@ export default function TillPage() {
             ))}
           </tbody>
         </table>
+        </div>
+
+        {/* Mobile Cards - Expenses */}
+        <div className="block md:hidden">
+          {expenses.length === 0 ? (
+            <p className="px-4 py-6 text-center text-gray-400 text-sm">No expenses recorded yet.</p>
+          ) : expenses.map((exp, i) => (
+            <div key={exp.id ?? i} className="relative bg-white border-b p-4">
+              {isAdmin && (
+                <div className="absolute top-4 right-4">
+                  <button onClick={() => { setDeleteExpense(exp); setDeleteError(null) }} className="text-red-500 hover:text-red-700">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-2 text-sm pr-8">
+                <div>
+                  <p className="text-xs text-gray-400">Date</p>
+                  <p className="font-medium text-gray-700">{exp.expenseDate?.split("T")[0]}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Amount</p>
+                  <p className="font-medium text-gray-700">{exp.currency === "USD" ? `$${(exp.amount ?? 0).toFixed(2)}` : (exp.amount ?? 0).toLocaleString()}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-xs text-gray-400">Expense Name</p>
+                  <p className="text-gray-600">{exp.description}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Currency</p>
+                  <p className="text-gray-600">{exp.currency}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Recorded By</p>
+                  <p className="text-gray-600">{exp.recordedBy}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Till Transactions Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-6">
-        <div className="flex items-center justify-between px-6 py-4 border-b">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-b">
           <h2 className="font-semibold text-gray-800">Till Transactions</h2>
           <Link href="/till/transactions" className="text-sm text-blue-600 hover:underline">View more</Link>
         </div>
+        <div className="overflow-x-auto hidden md:block">
         <table className="w-full">
           <thead>
             <tr className="text-left text-xs text-gray-500 border-b">
@@ -276,6 +318,46 @@ export default function TillPage() {
             ))}
           </tbody>
         </table>
+        </div>
+
+        {/* Mobile Cards - Transactions */}
+        <div className="block md:hidden">
+          {transactions.length === 0 ? (
+            <p className="px-4 py-6 text-center text-gray-400 text-sm">No transactions recorded yet.</p>
+          ) : transactions.map((tx, i) => (
+            <div key={tx.id ?? i} className="relative bg-white border-b p-4">
+              {isAdmin && (
+                <div className="absolute top-4 right-4">
+                  <button onClick={() => { setDeleteTx(tx); setDeleteError(null) }} className="text-red-500 hover:text-red-700">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-2 text-sm pr-8">
+                <div className="col-span-2">
+                  <p className="text-xs text-gray-400">Description</p>
+                  <p className="font-medium text-gray-700">{tx.description}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Amount</p>
+                  <p className="font-medium text-gray-700">{formatAmount(tx.amount, tx.currency)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Currency</p>
+                  <p className="text-gray-600">{tx.currency}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Date &amp; Time</p>
+                  <p className="text-gray-600">{formatDate(tx.transactionDate)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Recorded By</p>
+                  <p className="text-gray-600">{tx.recordedBy}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Add Expense Modal */}

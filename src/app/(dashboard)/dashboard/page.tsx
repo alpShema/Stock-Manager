@@ -154,7 +154,7 @@ export default function DashboardPage() {
       <p className="text-gray-500 text-sm mt-1">Welcome back{name ? `, ${name}` : ""}! Here's the business overview.</p>
 
       {/* Stat Cards */}
-      <div className={`grid ${gridCols[statCards.length]} gap-4 mt-6`}>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
         {statCards.map(card => (
           <StatCard key={card.title} title={card.title} value={card.value} icon={card.icon} iconBg={card.iconBg} />
         ))}
@@ -162,11 +162,12 @@ export default function DashboardPage() {
 
       {/* Recent Sales Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-6">
-        <div className="flex items-center justify-between px-6 py-4 border-b">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-b">
           <h2 className="font-semibold text-gray-800">Recent Sales</h2>
           <Link href="/sales" className="text-sm text-blue-600 hover:underline">View All</Link>
         </div>
 
+        <div className="overflow-x-auto hidden md:block">
         <table className="w-full">
           <thead>
             <tr className="text-left text-xs text-gray-500 border-b">
@@ -193,17 +194,60 @@ export default function DashboardPage() {
             ))}
           </tbody>
         </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="block md:hidden">
+          {recentSales.length === 0 ? (
+            <p className="px-4 py-8 text-center text-gray-400 text-sm">No recent sales.</p>
+          ) : recentSales.map((sale, index) => (
+            <div key={`${sale.code}-${sale.date}-${index}`} className="bg-white border-b p-4">
+              <div className="flex items-start justify-between mb-2">
+                <p className="font-medium text-gray-800 text-sm">{sale.name}</p>
+                <p className="font-semibold text-gray-800 text-sm">${sale.totalPrice}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-1 text-sm">
+                {isAdmin && (
+                  <div>
+                    <p className="text-xs text-gray-400">Item Code</p>
+                    <p className="text-gray-600">{sale.code}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-xs text-gray-400">Date</p>
+                  <p className="text-gray-600">{sale.date}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Container</p>
+                  <p className="text-gray-600">{sale.containerName}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Quantity</p>
+                  <p className="text-gray-600">{sale.quantity} units</p>
+                </div>
+                {isAdmin && (
+                  <div>
+                    <p className="text-xs text-gray-400">Recorded By</p>
+                    <p className="text-gray-600">{sale.recordedBy}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Quick Actions */}
       <div className="mt-6">
         <h2 className="font-semibold text-gray-800 mb-4">Quick Actions</h2>
-        <div className={`grid ${gridCols[quickActions.length]} gap-4`}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {quickActions.map(action => (
-            <Link key={action.href} href={action.href} className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+            <Link key={action.href} href={action.href} className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex sm:flex-col items-center sm:items-start gap-4 sm:gap-0">
               {action.icon}
-              <p className="font-medium text-gray-800">{action.label}</p>
-              <p className="text-sm text-gray-500 mt-1">{action.description}</p>
+              <div>
+                <p className="font-medium text-gray-800">{action.label}</p>
+                <p className="text-sm text-gray-500 mt-0.5">{action.description}</p>
+              </div>
             </Link>
           ))}
         </div>

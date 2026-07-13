@@ -179,7 +179,7 @@ export default function AddSalePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Item Name <span className="text-red-500">*</span></label>
                 <input
@@ -202,7 +202,7 @@ export default function AddSalePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Quantity <span className="text-red-500">*</span></label>
                 <input
@@ -385,7 +385,7 @@ export default function AddSalePage() {
                 <span className="font-semibold text-red-600">Debt to Create:</span>
                 <span className="font-bold text-red-600 text-lg">${debtAmount.toFixed(2)}</span>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Customer Name <span className="text-red-500">*</span>
