@@ -5,7 +5,8 @@ interface AuthState {
   token: string | null;
   role: "USER" | "ADMIN" | "SUPER_ADMIN" | null;
   email: string | null;
-  setAuth: (token: string, role: AuthState["role"], email: string) => void;
+  name: string | null;
+  setAuth: (token: string, role: AuthState["role"], email: string, name: string) => void;
   clearAuth: () => void;
 }
 
@@ -15,9 +16,10 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       role: null,
       email: null,
-      setAuth: (token, role, email) => set({ token, role, email }),
-      clearAuth: () => set({ token: null, role: null, email: null }),
+      name: null,
+      setAuth: (token, role, email, name) => set({ token, role, email, name }),
+      clearAuth: () => set({ token: null, role: null, email: null, name: null }),
     }),
-    { name: "dalyda-auth",skipHydration: true }
+    { name: "dalyda-auth", skipHydration: true }
   )
 );

@@ -41,6 +41,7 @@ const gridCols: Record<number, string> = {
 export default function DashboardPage() {
   const token = useAuthStore(state => state.token)
   const role = useAuthStore(state => state.role)
+  const name = useAuthStore(state => state.name)
 
   const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN"
 
@@ -150,7 +151,7 @@ export default function DashboardPage() {
 
       {/* Header */}
       <h1 className="text-2xl font-bold">Dashboard</h1>
-      <p className="text-gray-500 text-sm mt-1">Welcome back! Here's the business overview.</p>
+      <p className="text-gray-500 text-sm mt-1">Welcome back{name ? `, ${name}` : ""}! Here's the business overview.</p>
 
       {/* Stat Cards */}
       <div className={`grid ${gridCols[statCards.length]} gap-4 mt-6`}>
