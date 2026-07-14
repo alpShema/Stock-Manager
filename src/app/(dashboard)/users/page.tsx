@@ -346,7 +346,7 @@ export default function UsersPage() {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between px-6 py-4 border-t">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-6 py-4 border-t">
           <p className="text-sm text-gray-500">Showing {from} to {to} of {totalElements} items</p>
           <div className="flex items-center gap-2">
             <button onClick={() => { const p = Math.max(0, page - 1); setPage(p); fetchUsers(p, search) }} disabled={page === 0} className="p-1.5 rounded border text-gray-500 hover:bg-gray-50 disabled:opacity-40">&lt;</button>
@@ -358,7 +358,7 @@ export default function UsersPage() {
 
       {/* Register Modal */}
       {showRegister && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold">Register New User</h2>
@@ -372,7 +372,7 @@ export default function UsersPage() {
               </div>
             ) : (
               <form onSubmit={handleRegister} className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">First Name <span className="text-red-500">*</span></label>
                     <input value={regForm.firstName} onChange={e => setRegForm({ ...regForm, firstName: e.target.value })} placeholder="Jane" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -409,7 +409,7 @@ export default function UsersPage() {
 
       {/* Edit Modal */}
       {editTarget && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold">Edit User</h2>
@@ -448,7 +448,7 @@ export default function UsersPage() {
 
       {/* Delete Modal */}
       {deleteTarget && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
@@ -472,7 +472,7 @@ export default function UsersPage() {
 
       {/* Reset Password Modal */}
       {resetTarget && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">

@@ -362,7 +362,7 @@ export default function TillPage() {
 
       {/* Add Expense Modal */}
       {showExpense && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold">Add Expense</h2>
@@ -398,7 +398,7 @@ export default function TillPage() {
 
       {/* Till to Bank Modal */}
       {showTillToBank && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold">Till to Bank</h2>
@@ -428,7 +428,7 @@ export default function TillPage() {
 
       {/* Convert Currency Modal */}
       {showConvert && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Convert Currency</h2>
@@ -480,7 +480,7 @@ export default function TillPage() {
 
       {/* Delete Expense Modal */}
       {deleteExpense && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="bg-red-100 rounded-full p-2"><Trash2 className="w-5 h-5 text-red-600" /></div>
@@ -500,7 +500,7 @@ export default function TillPage() {
 
       {/* Delete Transaction Modal */}
       {deleteTx && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="bg-red-100 rounded-full p-2"><Trash2 className="w-5 h-5 text-red-600" /></div>

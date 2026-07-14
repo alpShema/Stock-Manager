@@ -170,7 +170,7 @@ export default function AuditPage() {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between px-6 py-4 border-t">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-6 py-4 border-t">
           <p className="text-sm text-gray-500">Showing {from} to {to} of {totalElements} records</p>
           <div className="flex items-center gap-2">
             <button

@@ -33,6 +33,7 @@ export default function AddSalePage() {
   const [advanceOption, setAdvanceOption] = useState<"none" | "existing">("none")
   const [selectedAdvance, setSelectedAdvance] = useState<{ customerName: string; amount: number } | null>(null)
 
+  const [lookupStatus, setLookupStatus] = useState<{ type: "success" | "error"; message: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -69,17 +70,26 @@ export default function AddSalePage() {
   }, [token])
 
   async function handleLookup() {
-    if (!itemCode) return
+    if (!itemCode.trim()) { setLookupStatus({ type: "error", message: "Please enter an item code first." }); return }
     setLookupLoading(true)
+    setLookupStatus(null)
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stock/lookup/${itemCode}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stock/lookup/${itemCode.trim()}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
       if (res.ok && data.data) {
         setItemName(data.data.name ?? "")
         setWeight(data.data.weight ?? "")
+        if (data.data.price) setUnitPrice(String(data.data.price))
+        setLookupStatus({ type: "success", message: `Item found: ${data.data.name}` })
+      } else {
+        setItemName("")
+        setWeight("")
+        setLookupStatus({ type: "error", message: data.message ?? `No item found with code "${itemCode}". Please check and try again.` })
       }
+    } catch {
+      setLookupStatus({ type: "error", message: "Unable to connect to the server. Please try again." })
     } finally {
       setLookupLoading(false)
     }
@@ -129,7 +139,7 @@ export default function AddSalePage() {
   }
 
   return (
-    <div className="max-w-lg">
+    <div className="w-full max-w-2xl">
       <Link href="/sales" className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4">
         <ArrowLeft className="w-4 h-4" />
         Back to Sales
@@ -177,6 +187,11 @@ export default function AddSalePage() {
                   {lookupLoading ? "..." : "Find"}
                 </button>
               </div>
+              {lookupStatus && (
+                <p className={`text-sm mt-1.5 ${lookupStatus.type === "success" ? "text-green-600" : "text-red-500"}`}>
+                  {lookupStatus.type === "success" ? "✓" : "⚠"} {lookupStatus.message}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

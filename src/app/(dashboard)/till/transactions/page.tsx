@@ -131,8 +131,8 @@ export default function TillTransactionsPage() {
               <tr key="loading"><td colSpan={isAdmin ? 6 : 5} className="px-6 py-8 text-center text-gray-400 text-sm">Loading…</td></tr>
             ) : transactions.length === 0 ? (
               <tr key="empty"><td colSpan={isAdmin ? 6 : 5} className="px-6 py-8 text-center text-gray-400 text-sm">No transactions found.</td></tr>
-            ) : transactions.map(tx => (
-              <tr key={tx.id} className="text-sm text-gray-700 border-b hover:bg-gray-50">
+            ) : transactions.map((tx, i) => (
+              <tr key={tx.id ?? i} className="text-sm text-gray-700 border-b hover:bg-gray-50">
                 <td className="px-6 py-4">{tx.description}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{formatDateTime(tx.transactionDate)}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{tx.recordedBy}</td>
@@ -163,8 +163,8 @@ export default function TillTransactionsPage() {
             <p className="px-4 py-8 text-center text-gray-400 text-sm">Loading…</p>
           ) : transactions.length === 0 ? (
             <p className="px-4 py-8 text-center text-gray-400 text-sm">No transactions found.</p>
-          ) : transactions.map(tx => (
-            <div key={tx.id} className="relative bg-white border-b p-4">
+          ) : transactions.map((tx, i) => (
+            <div key={tx.id ?? i} className="relative bg-white border-b p-4">
               {isAdmin && (
                 <div className="absolute top-4 right-4">
                   <button
@@ -203,7 +203,7 @@ export default function TillTransactionsPage() {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between px-6 py-4 border-t">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-6 py-4 border-t">
           <p className="text-sm text-gray-500">
             Showing {from} to {to} of {totalElements} items
           </p>
@@ -229,7 +229,7 @@ export default function TillTransactionsPage() {
 
       {/* Reverse Transaction Modal */}
       {reverseTarget && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">

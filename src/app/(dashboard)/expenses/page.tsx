@@ -184,7 +184,7 @@ export default function ExpensesPage() {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between px-6 py-4 border-t">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-6 py-4 border-t">
           <p className="text-sm text-gray-500">
             Showing {from} to {to} of {totalElements} items
           </p>
@@ -210,7 +210,7 @@ export default function ExpensesPage() {
 
       {/* Delete Modal */}
       {deleteTarget && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
             <h2 className="font-semibold text-gray-800 mb-2">Delete Expense</h2>
             <p className="text-sm text-gray-600 mb-4">

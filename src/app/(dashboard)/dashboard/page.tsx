@@ -17,23 +17,16 @@ interface StatCardProps {
 
 function StatCard({ title, value, icon, iconBg }: StatCardProps) {
   return (
-    <div className="bg-white rounded-xl p-5 flex items-center justify-between shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
+    <div className="bg-white rounded-xl p-5 flex items-start justify-between shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
       <div>
         <p className="text-sm text-gray-500">{title}</p>
-        <p className="text-2xl font-bold mt-1">{value}</p>
+        <p className="text-2xl font-bold mt-2">{value}</p>
       </div>
       <div className={`p-3 rounded-xl ${iconBg}`}>
         {icon}
       </div>
     </div>
   )
-}
-
-const gridCols: Record<number, string> = {
-  1: "grid-cols-1",
-  2: "grid-cols-2",
-  3: "grid-cols-3",
-  4: "grid-cols-4",
 }
 
 // ─── Dashboard Page ───────────────────────────────────────────────────────────
@@ -154,7 +147,7 @@ export default function DashboardPage() {
       <p className="text-gray-500 text-sm mt-1">Welcome back{name ? `, ${name}` : ""}! Here's the business overview.</p>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
         {statCards.map(card => (
           <StatCard key={card.title} title={card.title} value={card.value} icon={card.icon} iconBg={card.iconBg} />
         ))}
@@ -201,37 +194,19 @@ export default function DashboardPage() {
           {recentSales.length === 0 ? (
             <p className="px-4 py-8 text-center text-gray-400 text-sm">No recent sales.</p>
           ) : recentSales.map((sale, index) => (
-            <div key={`${sale.code}-${sale.date}-${index}`} className="bg-white border-b p-4">
-              <div className="flex items-start justify-between mb-2">
-                <p className="font-medium text-gray-800 text-sm">{sale.name}</p>
+            <div key={`${sale.code}-${sale.date}-${index}`} className="bg-white border-b px-4 py-3">
+              <div className="flex items-start justify-between mb-1">
+                <p className="font-semibold text-gray-800 text-sm">{sale.name}</p>
                 <p className="font-semibold text-gray-800 text-sm">${sale.totalPrice}</p>
               </div>
-              <div className="grid grid-cols-2 gap-1 text-sm">
-                {isAdmin && (
-                  <div>
-                    <p className="text-xs text-gray-400">Item Code</p>
-                    <p className="text-gray-600">{sale.code}</p>
-                  </div>
-                )}
-                <div>
-                  <p className="text-xs text-gray-400">Date</p>
-                  <p className="text-gray-600">{sale.date}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400">Container</p>
-                  <p className="text-gray-600">{sale.containerName}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400">Quantity</p>
-                  <p className="text-gray-600">{sale.quantity} units</p>
-                </div>
-                {isAdmin && (
-                  <div>
-                    <p className="text-xs text-gray-400">Recorded By</p>
-                    <p className="text-gray-600">{sale.recordedBy}</p>
-                  </div>
-                )}
+              <p className="text-xs text-gray-500 mb-1">{sale.date}</p>
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span>Container: <span className="text-gray-700">{sale.containerName}</span></span>
+                <span>Quantity: <span className="text-gray-700">{sale.quantity} units</span></span>
               </div>
+              {isAdmin && sale.recordedBy && (
+                <p className="text-xs text-gray-500 mt-1">Recorded By: <span className="text-gray-700">{sale.recordedBy}</span></p>
+              )}
             </div>
           ))}
         </div>

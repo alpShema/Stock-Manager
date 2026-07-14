@@ -154,7 +154,7 @@ export default function DebtsPage() {
 
       {/* Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-4">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
         <table className="w-full">
           <thead>
             <tr className="text-left text-xs text-gray-500 border-b">
@@ -199,8 +199,46 @@ export default function DebtsPage() {
         </table>
         </div>
 
+        {/* Mobile Cards */}
+        <div className="block md:hidden divide-y">
+          {debts.length === 0 ? (
+            <p className="px-4 py-8 text-center text-gray-400 text-sm">No debts found.</p>
+          ) : debts.map((debt, index) => (
+            <div key={debt.id ?? index} className="p-4">
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <p className="font-medium text-gray-800">{debt.customerName}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{debt.date}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {debt.status !== "PAID" && (
+                    <button
+                      onClick={() => { setPayItem(debt); setPayAmount(""); setPayError(null) }}
+                      className="flex items-center gap-1 bg-green-600 text-white px-2 py-1 rounded-lg text-xs font-medium hover:bg-green-700"
+                    >
+                      <DollarSign className="w-3 h-3" />
+                      Pay
+                    </button>
+                  )}
+                  {isAdmin && (
+                    <>
+                      <button onClick={() => { setEditItem(debt); setEditError(null) }} className="text-blue-500 hover:text-blue-700"><SquarePen className="w-4 h-4" /></button>
+                      <button onClick={() => setDeleteItem(debt)} className="text-red-500 hover:text-red-700"><Trash2 className="w-4 h-4" /></button>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm mt-2">
+                <div><p className="text-xs text-gray-400">Amount</p><p className="text-gray-700">{formatAmount(debt.amount, debt.currency)}</p></div>
+                <div><p className="text-xs text-gray-400">Status</p><div className="mt-0.5">{statusBadge(debt.status)}</div></div>
+                <div className="col-span-2"><p className="text-xs text-gray-400">Recorded By</p><p className="text-gray-700">{debt.recordedBy}</p></div>
+              </div>
+            </div>
+          ))}
+        </div>
+
         {/* Pagination */}
-        <div className="flex items-center justify-between px-6 py-4 text-sm text-gray-500">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-6 py-4 text-sm text-gray-500">
           <p>Showing {totalItems === 0 ? 0 : page * pageSize + 1} to {Math.min((page + 1) * pageSize, totalItems)} of {totalItems} items</p>
           <div className="flex items-center gap-2">
             <button onClick={() => setPage(p => p - 1)} disabled={page === 0} className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-50">‹</button>
@@ -212,7 +250,7 @@ export default function DebtsPage() {
 
       {/* Pay Debt Modal */}
       {payItem && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-semibold">Record Debt Payment</h2>
@@ -258,7 +296,7 @@ export default function DebtsPage() {
 
       {/* Delete Modal */}
       {deleteItem && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -285,7 +323,7 @@ export default function DebtsPage() {
 
       {/* Edit Modal */}
       {editItem && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-blue-600">Edit Debt</h2>

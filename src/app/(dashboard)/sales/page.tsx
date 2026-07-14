@@ -5,8 +5,6 @@ import { useAuthStore } from "@/store/authStore"
 import { Search, Download, Plus, SquarePen, Trash2, X, Save, CreditCard, TrendingUp } from "lucide-react"
 import Link from "next/link"
 
-const gridCols: Record<number, string> = { 1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4" }
-
 export default function SalesPage() {
   const token = useAuthStore(state => state.token)
   const role = useAuthStore(state => state.role)
@@ -150,25 +148,25 @@ export default function SalesPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Sales Management</h1>
           <p className="text-gray-500 text-sm mt-1">Track and manage your sales transactions</p>
         </div>
-        <div className="flex gap-3">
-          <Link href="/sales/debts" className="flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors">
+        <div className="flex flex-wrap gap-2">
+          <Link href="/sales/debts" className="flex items-center gap-1.5 bg-orange-500 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors whitespace-nowrap">
             <CreditCard className="w-4 h-4" />
             Debts
           </Link>
-          <Link href="/sales/advances" className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors">
+          <Link href="/sales/advances" className="flex items-center gap-1.5 bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors whitespace-nowrap">
             <TrendingUp className="w-4 h-4" />
             Advances
           </Link>
-          <button onClick={() => setShowExport(true)} className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
+          <button onClick={() => setShowExport(true)} className="flex items-center gap-1.5 bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors whitespace-nowrap">
             <Download className="w-4 h-4" />
             Export
           </button>
-          <Link href="/sales/add" className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+          <Link href="/sales/add" className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors whitespace-nowrap">
             <Plus className="w-4 h-4" />
             New Sale
           </Link>
@@ -177,7 +175,7 @@ export default function SalesPage() {
 
       {/* Stats Bar — ADMIN/SUPER_ADMIN only */}
       {isAdmin && (
-        <div className={`grid ${gridCols[statCards.length]} gap-4 mt-6 bg-blue-600 rounded-xl p-5`}>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 bg-blue-600 rounded-xl p-5">
           {statCards.map(card => (
             <div key={card.title} className="text-white">
               <p className="text-sm opacity-80">{card.title}</p>
@@ -188,30 +186,30 @@ export default function SalesPage() {
       )}
 
       {/* Search + Date filters */}
-      <div className="mt-6 flex flex-wrap gap-2">
-        <div className="relative flex-1 min-w-[200px]">
+      <div className="mt-6 bg-white border border-gray-200 rounded-xl px-4 py-3 flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[180px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(0) }}
-            placeholder="Search by item name, container, recorded by..."
-            className="w-full border border-gray-200 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Search by Item Name, Container, RecordedBy"
+            className="w-full border border-gray-200 rounded-lg pl-9 pr-4 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <span className="text-sm text-gray-500">From</span>
-          <input type="date" value={startDate} onChange={e => { setStartDate(e.target.value); setPage(0) }} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input type="date" value={startDate} onChange={e => { setStartDate(e.target.value); setPage(0) }} className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <span className="text-sm text-gray-500">To</span>
-          <input type="date" value={endDate} onChange={e => { setEndDate(e.target.value); setPage(0) }} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input type="date" value={endDate} onChange={e => { setEndDate(e.target.value); setPage(0) }} className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
       </div>
 
       {/* Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-4">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
         <table className="w-full">
           <thead>
             <tr className="text-left text-xs text-gray-500 border-b">
@@ -251,8 +249,40 @@ export default function SalesPage() {
         </table>
         </div>
 
+        {/* Mobile Cards */}
+        <div className="block md:hidden divide-y">
+          {sales.length === 0 ? (
+            <p className="px-4 py-8 text-center text-gray-400 text-sm">No sales found.</p>
+          ) : sales.map((sale, index) => (
+            <div key={sale.id ?? index} className="p-4">
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <p className="font-medium text-gray-800">{sale.name}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{sale.date}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-gray-800 text-sm">${(sale.totalPrice ?? 0).toFixed(2)}</span>
+                  {isSuperAdmin && (
+                    <>
+                      <button onClick={() => { setEditItem(sale); setEditError(null) }} className="text-blue-500 hover:text-blue-700"><SquarePen className="w-4 h-4" /></button>
+                      <button onClick={() => setDeleteItem(sale)} className="text-red-500 hover:text-red-700"><Trash2 className="w-4 h-4" /></button>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm mt-2">
+                <div><p className="text-xs text-gray-400">Item Code</p><p className="text-blue-600">{sale.code}</p></div>
+                <div><p className="text-xs text-gray-400">Container</p><p className="text-blue-600">{sale.containerName}</p></div>
+                <div><p className="text-xs text-gray-400">Quantity</p><p className="text-gray-700">{sale.quantity}</p></div>
+                <div><p className="text-xs text-gray-400">Unit Price</p><p className="text-gray-700">${(sale.price ?? 0).toFixed(2)}</p></div>
+                {isAdmin && <div className="col-span-2"><p className="text-xs text-gray-400">Recorded By</p><p className="text-gray-700">{sale.recordedBy}</p></div>}
+              </div>
+            </div>
+          ))}
+        </div>
+
         {/* Pagination */}
-        <div className="flex items-center justify-between px-6 py-4 text-sm text-gray-500">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-6 py-4 text-sm text-gray-500">
           <p>Showing {totalItems === 0 ? 0 : page * pageSize + 1} to {Math.min((page + 1) * pageSize, totalItems)} of {totalItems} items</p>
           <div className="flex items-center gap-2">
             <button onClick={() => setPage(p => p - 1)} disabled={page === 0} className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-50">‹</button>
@@ -264,7 +294,7 @@ export default function SalesPage() {
 
       {/* Export Modal */}
       {showExport && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold">Export Sales Data</h2>
@@ -291,7 +321,7 @@ export default function SalesPage() {
 
       {/* Delete Modal */}
       {deleteItem && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -318,7 +348,7 @@ export default function SalesPage() {
 
       {/* Edit Modal */}
       {editItem && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-blue-600">Edit Sale</h2>
