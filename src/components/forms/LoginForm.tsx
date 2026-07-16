@@ -2,6 +2,15 @@
 
 import { LogIn } from "lucide-react"
 import { useState, useEffect } from "react"
+
+if (typeof window !== "undefined") {
+  const _fetch = window.fetch
+  window.fetch = (input, init) => {
+    const headers = new Headers(init?.headers)
+    headers.set("ngrok-skip-browser-warning", "true")
+    return _fetch(input, { ...init, headers })
+  }
+}
 import { useAuthStore } from "@/store/authStore"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
