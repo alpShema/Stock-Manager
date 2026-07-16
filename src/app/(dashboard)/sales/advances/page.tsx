@@ -32,16 +32,22 @@ export default function AdvancesPage() {
   const [deleteItem, setDeleteItem] = useState<any | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   async function fetchAdvances() {
     const headers = { Authorization: `Bearer ${token}` }
     const url = search
       ? `${process.env.NEXT_PUBLIC_API_URL}/advance/search?keyword=${search}&page=${page}&size=${pageSize}`
       : `${process.env.NEXT_PUBLIC_API_URL}/advance/?page=${page}&size=${pageSize}`
-    const res = await fetch(url, { headers })
-    const data = await res.json()
-    setAdvances(data.data.content)
-    setTotalItems(data.data.totalElements)
+    setLoading(true)
+    try {
+      const res = await fetch(url, { headers })
+      const data = await res.json()
+      setAdvances(data.data.content)
+      setTotalItems(data.data.totalElements)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -166,7 +172,11 @@ export default function AdvancesPage() {
             </tr>
           </thead>
           <tbody>
-            {advances.map((adv, index) => (
+            {loading ? (
+              <tr key="loading"><td colSpan={isAdmin ? 5 : 4} className="px-6 py-8 text-center text-gray-400 text-sm">Loading…</td></tr>
+            ) : advances.length === 0 ? (
+              <tr key="empty"><td colSpan={isAdmin ? 5 : 4} className="px-6 py-8 text-center text-gray-400 text-sm">No advances found.</td></tr>
+            ) : advances.map((adv, index) => (
               <tr key={adv.id ?? index} className="text-sm text-gray-600 border-b hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap font-medium">{adv.customerName}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{formatAmount(adv.amount, adv.currency)}</td>
@@ -188,7 +198,9 @@ export default function AdvancesPage() {
 
         {/* Mobile Cards */}
         <div className="block md:hidden divide-y">
-          {advances.length === 0 ? (
+          {loading ? (
+            <p className="px-4 py-8 text-center text-gray-400 text-sm">Loading…</p>
+          ) : advances.length === 0 ? (
             <p className="px-4 py-8 text-center text-gray-400 text-sm">No advances found.</p>
           ) : advances.map((adv, index) => (
             <div key={adv.id ?? index} className="p-4">

@@ -32,6 +32,7 @@ export default function SalesPage() {
   const [deleteItem, setDeleteItem] = useState<any | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     async function fetchStats() {
@@ -63,10 +64,15 @@ export default function SalesPage() {
     const url = search || startDate || endDate
       ? `${process.env.NEXT_PUBLIC_API_URL}/sales/search?name=${search}&startDate=${startDate}&endDate=${endDate}&page=${page}&size=${pageSize}`
       : `${process.env.NEXT_PUBLIC_API_URL}/sales/?page=${page}&size=${pageSize}`
-    const res = await fetch(url, { headers })
-    const data = await res.json()
-    setSales(data.data.content)
-    setTotalItems(data.data.totalElements)
+    setLoading(true)
+    try {
+      const res = await fetch(url, { headers })
+      const data = await res.json()
+      setSales(data.data.content)
+      setTotalItems(data.data.totalElements)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -225,7 +231,11 @@ export default function SalesPage() {
             </tr>
           </thead>
           <tbody>
-            {sales.map((sale, index) => (
+            {loading ? (
+              <tr key="loading"><td colSpan={isSuperAdmin ? 9 : isAdmin ? 8 : 7} className="px-6 py-8 text-center text-gray-400 text-sm">Loading…</td></tr>
+            ) : sales.length === 0 ? (
+              <tr key="empty"><td colSpan={isSuperAdmin ? 9 : isAdmin ? 8 : 7} className="px-6 py-8 text-center text-gray-400 text-sm">No sales found.</td></tr>
+            ) : sales.map((sale, index) => (
               <tr key={sale.id ?? index} className="text-sm text-gray-600 border-b hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">{sale.date}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-blue-600">{sale.code}</td>
@@ -251,7 +261,9 @@ export default function SalesPage() {
 
         {/* Mobile Cards */}
         <div className="block md:hidden divide-y">
-          {sales.length === 0 ? (
+          {loading ? (
+            <p className="px-4 py-8 text-center text-gray-400 text-sm">Loading…</p>
+          ) : sales.length === 0 ? (
             <p className="px-4 py-8 text-center text-gray-400 text-sm">No sales found.</p>
           ) : sales.map((sale, index) => (
             <div key={sale.id ?? index} className="p-4">

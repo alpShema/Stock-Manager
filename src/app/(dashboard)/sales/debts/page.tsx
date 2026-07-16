@@ -26,16 +26,22 @@ export default function DebtsPage() {
   const [payAmount, setPayAmount] = useState("")
   const [payLoading, setPayLoading] = useState(false)
   const [payError, setPayError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   async function fetchDebts() {
     const headers = { Authorization: `Bearer ${token}` }
     const url = search
       ? `${process.env.NEXT_PUBLIC_API_URL}/debt/search?customerName=${search}&page=${page}&size=${pageSize}`
       : `${process.env.NEXT_PUBLIC_API_URL}/debt/?page=${page}&size=${pageSize}`
-    const res = await fetch(url, { headers })
-    const data = await res.json()
-    setDebts(data.data.content)
-    setTotalItems(data.data.totalElements)
+    setLoading(true)
+    try {
+      const res = await fetch(url, { headers })
+      const data = await res.json()
+      setDebts(data.data.content)
+      setTotalItems(data.data.totalElements)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -167,7 +173,11 @@ export default function DebtsPage() {
             </tr>
           </thead>
           <tbody>
-            {debts.map((debt, index) => (
+            {loading ? (
+              <tr key="loading"><td colSpan={6} className="px-6 py-8 text-center text-gray-400 text-sm">Loading…</td></tr>
+            ) : debts.length === 0 ? (
+              <tr key="empty"><td colSpan={6} className="px-6 py-8 text-center text-gray-400 text-sm">No debts found.</td></tr>
+            ) : debts.map((debt, index) => (
               <tr key={debt.id ?? index} className="text-sm text-gray-600 border-b hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap font-medium">{debt.customerName}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{formatAmount(debt.amount, debt.currency)}</td>
@@ -201,7 +211,9 @@ export default function DebtsPage() {
 
         {/* Mobile Cards */}
         <div className="block md:hidden divide-y">
-          {debts.length === 0 ? (
+          {loading ? (
+            <p className="px-4 py-8 text-center text-gray-400 text-sm">Loading…</p>
+          ) : debts.length === 0 ? (
             <p className="px-4 py-8 text-center text-gray-400 text-sm">No debts found.</p>
           ) : debts.map((debt, index) => (
             <div key={debt.id ?? index} className="p-4">

@@ -24,6 +24,7 @@ export default function StockPage() {
   const [deleteItem, setDeleteItem] = useState<any | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     async function fetchMeta() {
@@ -39,10 +40,15 @@ export default function StockPage() {
     const url = search || selectedContainer
       ? `${process.env.NEXT_PUBLIC_API_URL}/stock/search?keyword=${search}&containerName=${selectedContainer}&page=${page}&size=${pageSize}`
       : `${process.env.NEXT_PUBLIC_API_URL}/stock/?page=${page}&size=${pageSize}`
-    const res = await fetch(url, { headers })
-    const data = await res.json()
-    setStock(data.data.content)
-    setTotalItems(data.data.totalElements)
+    setLoading(true)
+    try {
+      const res = await fetch(url, { headers })
+      const data = await res.json()
+      setStock(data.data.content)
+      setTotalItems(data.data.totalElements)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -162,7 +168,11 @@ export default function StockPage() {
             </tr>
           </thead>
           <tbody>
-            {stock.map((item, index) => (
+            {loading ? (
+              <tr key="loading"><td colSpan={isSuperAdmin ? 7 : 6} className="px-6 py-8 text-center text-gray-400 text-sm">Loading…</td></tr>
+            ) : stock.length === 0 ? (
+              <tr key="empty"><td colSpan={isSuperAdmin ? 7 : 6} className="px-6 py-8 text-center text-gray-400 text-sm">No items found.</td></tr>
+            ) : stock.map((item, index) => (
               <tr key={item.id ?? index} className="text-sm text-gray-600 border-b hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">{item.code}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
@@ -186,7 +196,9 @@ export default function StockPage() {
 
         {/* Mobile Cards */}
         <div className="block md:hidden divide-y">
-          {stock.length === 0 ? (
+          {loading ? (
+            <p className="px-4 py-8 text-center text-gray-400 text-sm">Loading…</p>
+          ) : stock.length === 0 ? (
             <p className="px-4 py-8 text-center text-gray-400 text-sm">No items found.</p>
           ) : stock.map((item, index) => (
             <div key={item.id ?? index} className="p-4">

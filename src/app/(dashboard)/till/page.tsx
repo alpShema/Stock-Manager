@@ -41,9 +41,11 @@ export default function TillPage() {
   const [deleteTx, setDeleteTx] = useState<any | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   async function fetchAll() {
     const headers = { Authorization: `Bearer ${token}` }
+    setLoading(true)
     try {
       const [usd, francs, exp, tx] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/till/balance/usd`, { headers }).then(r => r.json()),
@@ -57,6 +59,8 @@ export default function TillPage() {
       setTransactions(Array.isArray(tx.data) ? tx.data : [])
     } catch (err) {
       console.error("Till fetchAll error:", err)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -221,7 +225,9 @@ export default function TillPage() {
             </tr>
           </thead>
           <tbody>
-            {expenses.length === 0 ? (
+            {loading ? (
+              <tr key="loading-exp"><td colSpan={isAdmin ? 6 : 5} className="px-6 py-8 text-center text-gray-400 text-sm">Loading…</td></tr>
+            ) : expenses.length === 0 ? (
               <tr key="empty-exp"><td colSpan={isAdmin ? 6 : 5} className="px-6 py-6 text-center text-gray-400 text-sm">No expenses recorded yet.</td></tr>
             ) : expenses.map((exp, i) => (
               <tr key={exp.id ?? i} className="text-sm text-gray-600 border-b hover:bg-gray-50">
@@ -243,7 +249,9 @@ export default function TillPage() {
 
         {/* Mobile Cards - Expenses */}
         <div className="block md:hidden">
-          {expenses.length === 0 ? (
+          {loading ? (
+            <p className="px-4 py-8 text-center text-gray-400 text-sm">Loading…</p>
+          ) : expenses.length === 0 ? (
             <p className="px-4 py-6 text-center text-gray-400 text-sm">No expenses recorded yet.</p>
           ) : expenses.map((exp, i) => (
             <div key={exp.id ?? i} className="relative bg-white border-b p-4">
@@ -300,7 +308,9 @@ export default function TillPage() {
             </tr>
           </thead>
           <tbody>
-            {transactions.length === 0 ? (
+            {loading ? (
+              <tr key="loading-tx"><td colSpan={isAdmin ? 6 : 5} className="px-6 py-8 text-center text-gray-400 text-sm">Loading…</td></tr>
+            ) : transactions.length === 0 ? (
               <tr key="empty-tx"><td colSpan={isAdmin ? 6 : 5} className="px-6 py-6 text-center text-gray-400 text-sm">No transactions recorded yet.</td></tr>
             ) : transactions.map((tx, i) => (
               <tr key={tx.id ?? i} className="text-sm text-gray-600 border-b hover:bg-gray-50">
@@ -322,7 +332,9 @@ export default function TillPage() {
 
         {/* Mobile Cards - Transactions */}
         <div className="block md:hidden">
-          {transactions.length === 0 ? (
+          {loading ? (
+            <p className="px-4 py-8 text-center text-gray-400 text-sm">Loading…</p>
+          ) : transactions.length === 0 ? (
             <p className="px-4 py-6 text-center text-gray-400 text-sm">No transactions recorded yet.</p>
           ) : transactions.map((tx, i) => (
             <div key={tx.id ?? i} className="relative bg-white border-b p-4">
